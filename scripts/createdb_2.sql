@@ -116,7 +116,24 @@ BEGIN
 END;
 $$
  LANGUAGE plpgsql;
-CREATE INDEX idx_surname ON Athlete(surname);
+CREATE OR REPLACE FUNCTION clear_athlete_data()
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM Athlete;
+END;
+$$
+ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION clear_all_data()
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM Result;
+    DELETE FROM Athlete;
+    DELETE FROM Competition;
+    DELETE FROM Region;
+END;
+$$
+ LANGUAGE plpgsql;
+CREATE INDEX idx_athlete_search ON Athlete(surname, athlete_name, birth_year, rank, gender, code_region);
 GRANT EXECUTE ON FUNCTION add_athlete(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
 GRANT EXECUTE ON FUNCTION add_competition(VARCHAR, VARCHAR, VARCHAR, DATE, DATE, VARCHAR, INT) TO administrator;
 GRANT EXECUTE ON FUNCTION add_result(INT, VARCHAR, VARCHAR, INT, DATE, INT, INT, INT) TO administrator;
@@ -124,6 +141,8 @@ GRANT EXECUTE ON FUNCTION delete_athlete(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, C
 GRANT EXECUTE ON FUNCTION add_region(CHAR, VARCHAR, VARCHAR, VARCHAR) TO administrator;
 GRANT EXECUTE ON FUNCTION update_athlete(INT, VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
 GRANT EXECUTE ON FUNCTION get_athlete_id(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
+GRANT EXECUTE ON FUNCTION clear_athlete_data() TO administrator;
+GRANT EXECUTE ON FUNCTION clear_all_data() to administrator;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Region TO administrator;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Athlete TO administrator;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Competition TO administrator;

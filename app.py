@@ -73,7 +73,35 @@ class RusswimmingApp:
         tk.Button(frame, text="Поиск результатов спортсмена", command=self.search_athlete).pack(pady=5)
         if self.user_role == "administrator":
             tk.Button(frame, text="Редактирование или удаление спортсмена", command=self.change_delete_athlete).pack(pady=5)
+            tk.Button(frame, text="Удаление всех спортсменов", command=self.clear_athlete_data).pack(pady=5)
+            tk.Button(frame, text="Удаление всех данных", command=self.clear_all_data).pack(pady=5)
+
+    def clear_all_data(self):
+        if not self.connect_db():
+            return
+
+        try:
+            query = sql.SQL("SELECT clear_all_data()")
+            self.cursor.execute(query)
+            self.conn.commit()
+            messagebox.showinfo("Информация", "Данные удалены.")
         
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+
+    def clear_athlete_data(self):
+        if not self.connect_db():
+            return
+
+        try:
+            query = sql.SQL("SELECT clear_athlete_data()")
+            self.cursor.execute(query)
+            self.conn.commit()
+            messagebox.showinfo("Информация", "Спортсмены удалены.")
+        
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+
     def create_region(self):
         create_window = Toplevel(self.root)
         create_window.title("Добавление региона")
