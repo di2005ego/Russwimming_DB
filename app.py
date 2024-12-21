@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk, Toplevel
 import psycopg2
 from psycopg2 import sql
+from tkcalendar import DateEntry
 import sqlparse
 
 class RusswimmingApp:
@@ -18,7 +19,7 @@ class RusswimmingApp:
         
         self.root.mainloop()
 
-    def create_login_widgets(self): # Виджет для авторизации
+    def create_login_widgets(self):
         self.root.configure(bg='lightblue')
         frame = tk.Frame(self.root, bg='lightblue')
         frame.pack(expand=True)
@@ -33,25 +34,43 @@ class RusswimmingApp:
 
         tk.Button(frame, text="Войти", command=self.login).pack(pady=10)
 
-    def login(self): # Авторизация
+    def login(self):
         login = self.login_entry.get().strip()
         password = self.password_entry.get().strip()
-
+        
+        self.user_role = login
         self.user_password = password
 
-        if login == "administrator" and password == "di_ego":
+        """if login == "administrator" and password == "di_ego":
             self.user_role = "administrator"
-            messagebox.showinfo("Авторизация", "Вы вошли как администратор.")
+            messagebox.showinfo("Авторизация", "Вы вошли как администратор")
             self.create_main_widgets()
         elif login == "avg_user" and password == "userxfa":
             self.user_role = "avg_user"
-            messagebox.showinfo("Авторизация", "Вы вошли как пользователь.")
+            messagebox.showinfo("Авторизация", "Вы вошли как пользователь")
             self.create_main_widgets()
         else:
-            messagebox.showerror("Ошибка авторизации", "Неверный логин или пароль.")
+            messagebox.showerror("Ошибка авторизации", "Неверный логин или пароль")"""
+        
+        try:
+            self.conn = psycopg2.connect(
+                    dbname='russwimming_db',
+                    user=self.user_role,
+                    password=self.user_password,
+                    host='localhost',
+                    port='5432'
+            )
+            self.cursor = self.conn.cursor()
+            if self.user_role == "administrator":
+                messagebox.showinfo("Авторизация", "Вы вошли как администратор")
+            elif self.user_role == "avg_user":
+                messagebox.showinfo("Авторизация", "Вы вошли как пользователь")
+            self.create_main_widgets()
 
-    def create_main_widgets(self): # Основное окно
-        # Удаляем все виджеты авторизации
+        except Exception as e:
+            messagebox.showerror("Ошибка авторизации", "Неверный логин или пароль")
+
+    def create_main_widgets(self):
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -60,7 +79,6 @@ class RusswimmingApp:
 
         frame.configure(bg='lightblue')
 
-        # Кнопки для управления базой данных
         if self.user_role == "administrator":
             tk.Button(frame, text="Создать базу данных", command=self.create_database).pack(pady=5)
             tk.Button(frame, text="Удалить базу данных", command=self.delete_database).pack(pady=5)
@@ -118,8 +136,8 @@ class RusswimmingApp:
         self.region_name_entry = tk.Entry(frame)
         self.region_name_entry.pack(pady=5)
 
-        tk.Label(frame, text="Федеральный округ", bg='lightblue').pack()
-        self.federal_district_entry = tk.Entry(frame)
+        tk.Label(frame, text="Федеральный округ или город Федерального значения", bg='lightblue').pack()
+        self.federal_district_entry = ttk.Combobox(frame, values=["ЦФО", "ПФО", "СЗФО", "ЮФО, СКФО и Севастополь", "УрФО", "СФО", "ДВФО", "Москва", "Санкт-Петербург"], state='readonly')
         self.federal_district_entry.pack(pady=5)
 
         tk.Label(frame, text="Руководитель", bg='lightblue').pack()
@@ -149,11 +167,11 @@ class RusswimmingApp:
         self.birth_year_entry.pack(pady=5)
 
         tk.Label(frame, text="Разряд", bg='lightblue').pack()
-        self.rank_entry = tk.Entry(frame)
+        self.rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.rank_entry.pack(pady=5)
 
-        tk.Label(frame, text="Пол (М/Ж)", bg='lightblue').pack()
-        self.gender_entry = tk.Entry(frame)
+        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        self.gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.gender_entry.pack(pady=5)
 
         tk.Label(frame, text="Код региона", bg='lightblue').pack()
@@ -179,23 +197,27 @@ class RusswimmingApp:
         self.city_entry.pack(pady=5)
 
         tk.Label(frame, text="Уровень", bg='lightblue').pack()
-        self.competition_level_entry = tk.Entry(frame)
+        self.competition_level_entry = ttk.Combobox(frame, values=["Международный", "Всероссийский", "Межрегиональный", "Региональный"], state='readonly')
         self.competition_level_entry.pack(pady=5)
 
         tk.Label(frame, text="Дата начала", bg='lightblue').pack()
-        self.begin_date_entry = tk.Entry(frame)
+        self.begin_date_entry = DateEntry(frame, width=12, background='darkblue',
+                                   foreground='white', borderwidth=2,
+                                   date_pattern='dd/mm/yyyy')
         self.begin_date_entry.pack(pady=5)
 
         tk.Label(frame, text="Дата окончания", bg='lightblue').pack()
-        self.end_date_entry = tk.Entry(frame)
+        self.end_date_entry = DateEntry(frame, width=12, background='darkblue',
+                                   foreground='white', borderwidth=2,
+                                   date_pattern='dd/mm/yyyy')
         self.end_date_entry.pack(pady=5)
 
         tk.Label(frame, text="Возрастная группа", bg='lightblue').pack()
-        self.age_group_entry = tk.Entry(frame)
+        self.age_group_entry = ttk.Combobox(frame, values=["Мужчины, женщины", "Юниоры, юниорки (16-18 лет)", "Юноши, девушки (14-15 лет)", "Юноши, девушки (11-13 лет)"], state='readonly')
         self.age_group_entry.pack(pady=5)
 
-        tk.Label(frame, text="Бассейн", bg='lightblue').pack()
-        self.pool_length_entry = tk.Entry(frame)
+        tk.Label(frame, text="Бассейн, м", bg='lightblue').pack()
+        self.pool_length_entry = ttk.Combobox(frame, values=[25, 50], state='readonly')
         self.pool_length_entry.pack(pady=5)
 
         tk.Button(frame, text="Добавить соревнование", command=lambda:self.add_competition(create_window)).pack(pady=5)
@@ -209,11 +231,11 @@ class RusswimmingApp:
         frame.pack(expand=True)
 
         tk.Label(frame, text="Длина дисциплины, м", bg='lightblue').pack()
-        self.discipline_length_entry = tk.Entry(frame)
+        self.discipline_length_entry = ttk.Combobox(frame, values=[50, 100, 200, 400, 800, 1500], state='readonly')
         self.discipline_length_entry.pack(pady=5)
 
         tk.Label(frame, text="Стиль дисциплины", bg='lightblue').pack()
-        self.discipline_style_entry = tk.Entry(frame)
+        self.discipline_style_entry = ttk.Combobox(frame, values=["Баттерфляй", "На спине", "Брасс", "Вольный стиль", "Комплекс"], state='readonly')
         self.discipline_style_entry.pack(pady=5)
 
         tk.Label(frame, text="Результат", bg='lightblue').pack()
@@ -225,7 +247,9 @@ class RusswimmingApp:
         self.points_entry.pack(pady=5)
 
         tk.Label(frame, text="Дата", bg='lightblue').pack()
-        self.result_date_entry = tk.Entry(frame)
+        self.result_date_entry = DateEntry(frame, width=12, background='darkblue',
+                                   foreground='white', borderwidth=2,
+                                   date_pattern='dd/mm/yyyy')
         self.result_date_entry.pack(pady=5)
 
         tk.Label(frame, text="Позиция (место)", bg='lightblue').pack()
@@ -251,10 +275,14 @@ class RusswimmingApp:
         frame.pack(expand=True)
 
         tk.Label(frame, text="Интересующие даты", bg='lightblue').pack()
-        self.rating_begin_date_entry = tk.Entry(frame)
+        self.rating_begin_date_entry = DateEntry(frame, width=12, background='darkblue',
+                                   foreground='white', borderwidth=2,
+                                   date_pattern='dd/mm/yyyy')
         self.rating_begin_date_entry.pack(pady=5)
 
-        self.rating_end_date_entry = tk.Entry(frame)
+        self.rating_end_date_entry = DateEntry(frame, width=12, background='darkblue',
+                                   foreground='white', borderwidth=2,
+                                   date_pattern='dd/mm/yyyy')
         self.rating_end_date_entry.pack(pady=5)
 
         tk.Label(frame, text="Возраст", bg='lightblue').pack()
@@ -265,18 +293,18 @@ class RusswimmingApp:
         self.max_age_entry.pack(pady=5)
 
         tk.Label(frame, text="Пол", bg='lightblue').pack()
-        self.rating_gender_entry = tk.Entry(frame)
+        self.rating_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.rating_gender_entry.pack(pady=5)
 
         tk.Label(frame, text="Дисциплина", bg='lightblue').pack()
-        self.rating_discipline_length_entry = tk.Entry(frame)
+        self.rating_discipline_length_entry = ttk.Combobox(frame, values=[50, 100, 200, 400, 800, 1500], state='readonly')
         self.rating_discipline_length_entry.pack(pady=5)
 
         self.rating_discipline_style_entry = tk.Entry(frame)
         self.rating_discipline_style_entry.pack(pady=5)
 
         tk.Label(frame, text="Бассейн", bg='lightblue').pack()
-        self.rating_pool_length_entry = tk.Entry(frame)
+        self.rating_pool_length_entry = ttk.Combobox(frame, values=["Баттерфляй", "На спине", "Брасс", "Вольный стиль", "Комплекс"], state='readonly')
         self.rating_pool_length_entry.pack(pady=5)
 
         tk.Button(frame, text="Показать результаты", command=lambda:self.get_results(create_window)).pack(pady=5)
@@ -298,7 +326,7 @@ class RusswimmingApp:
         self.search_name_entry.pack(pady=5)
 
         tk.Label(frame, text="Пол", bg='lightblue').pack()
-        self.search_gender_entry = tk.Entry(frame)
+        self.search_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.search_gender_entry.pack(pady=5)
 
         tk.Label(frame, text="Год рождения", bg='lightblue').pack()
@@ -306,7 +334,7 @@ class RusswimmingApp:
         self.search_b_y_entry.pack(pady=5)
 
         tk.Label(frame, text="Разряд", bg='lightblue').pack()
-        self.search_rank_entry = tk.Entry(frame)
+        self.search_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.search_rank_entry.pack(pady=5)
 
         tk.Label(frame, text="Код региона", bg='lightblue').pack()
@@ -332,7 +360,7 @@ class RusswimmingApp:
         self.cd_name_entry.pack(pady=5)
 
         tk.Label(frame, text="Пол", bg='lightblue').pack()
-        self.cd_gender_entry = tk.Entry(frame)
+        self.cd_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.cd_gender_entry.pack(pady=5)
 
         tk.Label(frame, text="Год рождения", bg='lightblue').pack()
@@ -340,7 +368,7 @@ class RusswimmingApp:
         self.cd_birth_year_entry.pack(pady=5)
 
         tk.Label(frame, text="Разряд", bg='lightblue').pack()
-        self.cd_rank_entry = tk.Entry(frame)
+        self.cd_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.cd_rank_entry.pack(pady=5)
 
         tk.Label(frame, text="Код региона", bg='lightblue').pack()
@@ -373,22 +401,16 @@ class RusswimmingApp:
 
     def create_database(self):
         try:
-            conn = psycopg2.connect(user="postgres",
-                                    password="postgres",
-                                    host="localhost",
-                                    port="5432")
-            conn.autocommit = True
+            """conn = psycopg2.connect(user="postgres", password="postgres", host="localhost", port="5432")"""
+            conn = psycopg2.connect(user=self.user_role, password=self.user_password, host="localhost", port="5432", dbname="russwimming_db")
+            """conn.autocommit = True"""
             cursor = conn.cursor()
-            createdb_file = open('scripts/createdb.sql', 'r')
+            """createdb_file = open('scripts/createdb.sql', 'r')
             createdb = createdb_file.read()
             cursor.execute(createdb)
             cursor.close()
             conn.close()
-            conn = psycopg2.connect(user="postgres",
-                                    password="postgres",
-                                    host="localhost",
-                                    port="5432",
-                                    dbname="russwimming_db")
+            conn = psycopg2.connect(user="postgres", password="postgres", host="localhost", port="5432", dbname="russwimming_db")
             conn.autocommit = True
             cursor = conn.cursor()
             createdb_2_file = open('scripts/createdb_2.sql', 'r')
@@ -397,11 +419,14 @@ class RusswimmingApp:
             for s in statements:
                 s = s.strip()
                 cursor.execute(s)
-
             getResults_file = open('scripts/get_results.sql', 'r')
             getResults = getResults_file.read()
-            cursor.execute(getResults)
+            cursor.execute(getResults)"""
             
+            query = sql.SQL("SELECT create_tables()")
+            cursor.execute(query)
+            conn.commit()
+
             messagebox.showinfo("Информация", "База данных создана.")
 
         except Exception as e:
@@ -413,28 +438,31 @@ class RusswimmingApp:
 
     def delete_database(self):
         try:
-            conn = psycopg2.connect(user="postgres",
-                                    password="postgres",
-                                    host="localhost",
-                                    port="5432")
-            conn.autocommit = True
+            conn = psycopg2.connect(user=self.user_role, password=self.user_password, host="localhost", port="5432", dbname="russwimming_db")
+            """conn = psycopg2.connect(user="postgres", password="postgres", host="localhost", port="5432")
+            conn.autocommit = True"""
             cursor = conn.cursor()
 
-            deletedb_file = open('scripts/deletedb.sql', 'r')
+            """deletedb_file = open('scripts/deletedb.sql', 'r')
             deletedb = deletedb_file.read()
             cursor.execute(deletedb)
 
             drop_roles_file = open('scripts/drop_roles.sql', 'r')
             drop_roles = drop_roles_file.read()
-            cursor.execute(drop_roles)
+            cursor.execute(drop_roles)"""
 
-            cursor.close()
-            conn.close()
+            query = sql.SQL("SELECT drop_tables()")
+            cursor.execute(query)
+            conn.commit()
             
             messagebox.showinfo("Информация", "База данных удалена.")
         
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
+
+        finally:
+            cursor.close()
+            conn.close()
 
     def add_region(self, create_window):
         if not self.connect_db():
@@ -474,9 +502,6 @@ class RusswimmingApp:
         rank = self.rank_entry.get().strip().upper()
         gender = self.gender_entry.get().strip().upper()
         code_region = self.code_region_entry.get().strip().upper()
-
-        if gender not in ['М', 'Ж']:
-            raise ValueError("Пол должен быть М или Ж.")
 
         try:
             query = sql.SQL("SELECT add_athlete({}, {}, {}, {}, {}, {})").format(
@@ -652,9 +677,6 @@ class RusswimmingApp:
         cd_gender = self.cd_gender_entry.get().strip().upper()
         cd_code_region = self.cd_code_region_entry.get().strip().upper()
 
-        if cd_gender not in ['М', 'Ж']:
-            raise ValueError("Пол должен быть М или Ж.")
-
         try:
             query = sql.SQL("SELECT delete_athlete({}, {}, {}, {}, {}, {})").format(
                 sql.Literal(cd_surname),
@@ -684,9 +706,6 @@ class RusswimmingApp:
         cd_rank = self.cd_rank_entry.get().strip().upper()
         cd_gender = self.cd_gender_entry.get().strip().upper()
         cd_code_region = self.cd_code_region_entry.get().strip().upper()
-
-        if cd_gender not in ['М', 'Ж']:
-            raise ValueError("Пол должен быть М или Ж.")
 
         try:
             query = sql.SQL("SELECT get_athlete_id({}, {}, {}, {}, {}, {})").format(
@@ -732,11 +751,11 @@ class RusswimmingApp:
         new_birth_year_entry.pack(pady=5)
 
         tk.Label(frame, text="Разряд", bg='lightblue').pack()
-        new_rank_entry = tk.Entry(frame)
+        new_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         new_rank_entry.pack(pady=5)
  
-        tk.Label(frame, text="Пол (M/F)", bg='lightblue').pack()
-        new_gender_entry = tk.Entry(frame)
+        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        new_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         new_gender_entry.pack(pady=5)
 
         tk.Label(frame, text="Код региона", bg='lightblue').pack()
@@ -750,10 +769,6 @@ class RusswimmingApp:
             new_rank = new_rank_entry.get().strip().upper()
             new_gender = new_gender_entry.get().strip().upper()
             new_code_region = new_code_region_entry.get().strip().upper()
-
-            if new_gender not in ['М', 'Ж']:
-               messagebox.showerror("Ошибка", "Пол должен быть М или Ж.")
-               return
 
             try:
                 update_query = sql.SQL("SELECT update_athlete({}, {}, {}, {}, {}, {}, {})").format(
