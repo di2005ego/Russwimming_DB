@@ -47,6 +47,11 @@ BEGIN
         competition_id INT REFERENCES Competition(id_competition),
         athlete_id INT REFERENCES Athlete(id_athlete)
     );
+
+    GRANT SELECT ON TABLE Region TO avg_user;
+    GRANT SELECT ON TABLE Athlete TO avg_user;
+    GRANT SELECT ON TABLE Competition TO avg_user;
+    GRANT SELECT ON TABLE Result TO avg_user;
 END;
 $$
  LANGUAGE plpgsql;
@@ -167,31 +172,26 @@ $$
 
 CREATE INDEX idx_athlete_search ON Athlete(surname, athlete_name, birth_year, rank, gender, code_region);
 
-GRANT EXECUTE ON FUNCTION create_tables() TO administrator;
-GRANT EXECUTE ON FUNCTION drop_tables() TO administrator;
-GRANT EXECUTE ON FUNCTION add_athlete(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
-GRANT EXECUTE ON FUNCTION add_competition(VARCHAR, VARCHAR, VARCHAR, DATE, DATE, VARCHAR, INT) TO administrator;
-GRANT EXECUTE ON FUNCTION add_result(INT, VARCHAR, VARCHAR, INT, DATE, INT, INT, INT) TO administrator;
-GRANT EXECUTE ON FUNCTION delete_athlete(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
-GRANT EXECUTE ON FUNCTION add_region(CHAR, VARCHAR, VARCHAR, VARCHAR) TO administrator;
-GRANT EXECUTE ON FUNCTION update_athlete(INT, VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
-GRANT EXECUTE ON FUNCTION get_athlete_id(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
-GRANT EXECUTE ON FUNCTION clear_athlete_data() TO administrator;
-GRANT EXECUTE ON FUNCTION clear_all_data() to administrator;
+--GRANT EXECUTE ON FUNCTION create_tables() TO administrator;
+--GRANT EXECUTE ON FUNCTION drop_tables() TO administrator;
+--GRANT EXECUTE ON FUNCTION add_athlete(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
+--GRANT EXECUTE ON FUNCTION add_competition(VARCHAR, VARCHAR, VARCHAR, DATE, DATE, VARCHAR, INT) TO administrator;
+--GRANT EXECUTE ON FUNCTION add_result(INT, VARCHAR, VARCHAR, INT, DATE, INT, INT, INT) TO administrator;
+--GRANT EXECUTE ON FUNCTION delete_athlete(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
+--GRANT EXECUTE ON FUNCTION add_region(CHAR, VARCHAR, VARCHAR, VARCHAR) TO administrator;
+--GRANT EXECUTE ON FUNCTION update_athlete(INT, VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
+--GRANT EXECUTE ON FUNCTION get_athlete_id(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator;
+--GRANT EXECUTE ON FUNCTION clear_athlete_data() TO administrator;
+--GRANT EXECUTE ON FUNCTION clear_all_data() to administrator;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Region TO administrator;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Athlete TO administrator;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Competition TO administrator;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Result TO administrator;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Region TO administrator;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Athlete TO administrator;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Competition TO administrator;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE Result TO administrator;
 
-GRANT SELECT ON TABLE Region TO avg_user;
-GRANT SELECT ON TABLE Athlete TO avg_user;
-GRANT SELECT ON TABLE Competition TO avg_user;
-GRANT SELECT ON TABLE Result TO avg_user;
-
-GRANT USAGE, SELECT, UPDATE ON SEQUENCE athlete_id_athlete_seq TO administrator;
-GRANT USAGE, SELECT, UPDATE ON SEQUENCE competition_id_competition_seq TO administrator;
-GRANT USAGE, SELECT, UPDATE ON SEQUENCE result_id_result_seq TO administrator;
-GRANT USAGE, SELECT ON SEQUENCE athlete_id_athlete_seq TO avg_user;
-GRANT USAGE, SELECT ON SEQUENCE competition_id_competition_seq TO avg_user;
-GRANT USAGE, SELECT ON SEQUENCE result_id_result_seq TO avg_user;
+--GRANT USAGE, SELECT, UPDATE ON SEQUENCE athlete_id_athlete_seq TO administrator;
+--GRANT USAGE, SELECT, UPDATE ON SEQUENCE competition_id_competition_seq TO administrator;
+--GRANT USAGE, SELECT, UPDATE ON SEQUENCE result_id_result_seq TO administrator;
+--GRANT USAGE, SELECT ON SEQUENCE athlete_id_athlete_seq TO avg_user;
+--GRANT USAGE, SELECT ON SEQUENCE competition_id_competition_seq TO avg_user;
+--GRANT USAGE, SELECT ON SEQUENCE result_id_result_seq TO avg_user;

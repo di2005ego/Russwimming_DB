@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION get_results(rating_begin_date DATE, rating_end_date D
 RETURNS TABLE(rank_number BIGINT, surname VARCHAR, athlete_name VARCHAR, birth_year INT, rank VARCHAR, region_name VARCHAR, competition_title VARCHAR, city VARCHAR, time_result VARCHAR, points INT, result_date DATE) AS $$
 BEGIN
     RETURN QUERY 
-    SELECT ROW_NUMBER() OVER (ORDER BY res.time_result) AS rank_number,
+    SELECT ROW_NUMBER() OVER (ORDER BY res.points DESC) AS rank_number,
            s.surname,
            s.athlete_name,
            s.birth_year,
@@ -21,7 +21,7 @@ BEGIN
         AND (EXTRACT(YEAR FROM CURRENT_DATE) - s.birth_year) BETWEEN min_age AND max_age
         AND s.gender = rating_gender
         AND c.pool_length = rating_pool_length
-      ORDER BY res.time_result;
+      ORDER BY res.points DESC;
 END;
 $$
  LANGUAGE plpgsql;

@@ -300,11 +300,11 @@ class RusswimmingApp:
         self.rating_discipline_length_entry = ttk.Combobox(frame, values=[50, 100, 200, 400, 800, 1500], state='readonly')
         self.rating_discipline_length_entry.pack(pady=5)
 
-        self.rating_discipline_style_entry = tk.Entry(frame)
+        self.rating_discipline_style_entry = ttk.Combobox(frame, values=["Баттерфляй", "На спине", "Брасс", "Вольный стиль", "Комплекс"], state='readonly')
         self.rating_discipline_style_entry.pack(pady=5)
 
         tk.Label(frame, text="Бассейн", bg='lightblue').pack()
-        self.rating_pool_length_entry = ttk.Combobox(frame, values=["Баттерфляй", "На спине", "Брасс", "Вольный стиль", "Комплекс"], state='readonly')
+        self.rating_pool_length_entry = ttk.Combobox(frame, values=[25, 50], state='readonly')
         self.rating_pool_length_entry.pack(pady=5)
 
         tk.Button(frame, text="Показать результаты", command=lambda:self.get_results(create_window)).pack(pady=5)
@@ -607,6 +607,12 @@ class RusswimmingApp:
         rating_discipline_style = self.rating_discipline_style_entry.get().strip()
         rating_pool_length = self.rating_pool_length_entry.get().strip()
 
+        if min_age == "":
+            min_age = 0
+        
+        if max_age == "":
+            max_age = 100
+
         try:
             query = sql.SQL("SELECT * FROM get_results({}, {}, {}, {}, {}, {}, {}, {})").format(
                 sql.Literal(rating_begin_date),
@@ -731,12 +737,17 @@ class RusswimmingApp:
             create_window.destroy()
     
     def update_window(self, cd_id):
+        if isinstance(cd_id, tuple):
+            cd_id = cd_id[0]
+
         update_window = Toplevel(self.root)
         update_window.title("Редактирование спортсмена")
 
         update_window.configure(bg='lightblue')
         frame = tk.Frame(update_window, bg='lightblue')
         frame.pack(expand=True)
+
+        tk.Label(frame, text=f"Редактирование спортсмена с ID: {cd_id}", bg='lightblue', font=('Arial', 12, 'bold')).pack(pady=10)
 
         tk.Label(frame, text="Фамилия", bg='lightblue').pack()
         new_surname_entry = tk.Entry(frame)
