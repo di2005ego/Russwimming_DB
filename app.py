@@ -468,7 +468,7 @@ class RusswimmingApp:
         if not self.connect_db():
             return
         
-        region_code = self.region_code_entry.get().strip()
+        region_code = self.region_code_entry.get().strip().upper()
         region_name = self.region_name_entry.get().strip()
         federal_district = self.federal_district_entry.get()
         team_leader = self.team_leader_entry.get().strip()
@@ -578,7 +578,7 @@ class RusswimmingApp:
         if not self.connect_db():
             return
         
-        discipline_length = self.discipline_length_entry.get()
+        discipline_length = int(self.discipline_length_entry.get())
         discipline_style = self.discipline_style_entry.get()
         time_result = self.time_result_entry.get().strip()
         try:
@@ -598,6 +598,13 @@ class RusswimmingApp:
         competition_id = next((id_competition for id_competition, competition_name in self.competition_names if competition_name == selected_competition_name), None)
         selected_athlete_name = self.athlete_id_entry.get()
         athlete_id = next((id_athlete for id_athlete, athlete_name in self.athlete_names if athlete_name == selected_athlete_name), None)
+
+        if (((discipline_length == 400 or discipline_length == 800 or discipline_length == 1500) and 
+            (discipline_style == "Баттерфляй" or discipline_style == "На спине" or discipline_style == "Брасс")) or
+            ((discipline_length == 800 or discipline_length == 1500) and discipline_style == "Комплекс")):
+            messagebox.showerror("Ошибка", "Такой дистанции не существует")
+            create_window.destroy()
+            return
        
         try:
             query = sql.SQL("SELECT add_result({}, {}, {}, {}, {}, {}, {}, {})").format(
@@ -658,6 +665,13 @@ class RusswimmingApp:
 
         if max_age > 116:
             messagebox.showerror("Ошибка", "Некорректное значение максимального возраста")
+            create_window.destroy()
+            return
+        
+        if (((rating_discipline_length == 400 or rating_discipline_length == 800 or rating_discipline_length == 1500) and 
+            (rating_discipline_style == "Баттерфляй" or rating_discipline_style == "На спине" or rating_discipline_style == "Брасс")) or
+            ((rating_discipline_length == 800 or rating_discipline_length == 1500) and rating_discipline_style == "Комплекс")):
+            messagebox.showerror("Ошибка", "Такой дистанции не существует")
             create_window.destroy()
             return
 
