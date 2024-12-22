@@ -1,3 +1,4 @@
+--Затем создаём две самые главные функции и даем права на их выполнение avg_user'у
 CREATE OR REPLACE FUNCTION get_results(rating_begin_date DATE, rating_end_date DATE, discipline_length INT, discipline_style VARCHAR, rating_gender CHAR, rating_pool_length INT, min_age INT DEFAULT 0, max_age INT DEFAULT 100) 
 RETURNS TABLE(rank_number BIGINT, surname VARCHAR, athlete_name VARCHAR, birth_year INT, rank VARCHAR, region_name VARCHAR, competition_title VARCHAR, city VARCHAR, time_result VARCHAR, points INT, result_date DATE) AS $$
 BEGIN
@@ -74,5 +75,5 @@ END;
 $$
  LANGUAGE plpgsql;
 
-GRANT EXECUTE ON FUNCTION get_results(DATE, DATE, INT, VARCHAR, CHAR, INT, INT, INT) TO administrator, avg_user;
-GRANT EXECUTE ON FUNCTION get_athlete_results(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO administrator, avg_user;
+GRANT EXECUTE ON FUNCTION get_results(DATE, DATE, INT, VARCHAR, CHAR, INT, INT, INT) TO avg_user;
+GRANT EXECUTE ON FUNCTION get_athlete_results(VARCHAR, VARCHAR, INT, VARCHAR, CHAR, CHAR) TO avg_user;

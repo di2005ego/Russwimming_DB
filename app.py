@@ -4,6 +4,7 @@ import psycopg2
 from psycopg2 import sql
 from tkcalendar import DateEntry
 import sqlparse
+from datetime import date
 
 class RusswimmingApp:
     def __init__(self):
@@ -11,6 +12,8 @@ class RusswimmingApp:
         self.cursor = None
         self.user_role = None # Логин и роль
         self.user_password = None # Пароль
+        self.athlete_names = []
+        self.competition_names = []
         
         self.root = tk.Tk()
         self.root.title("Russwimming App")
@@ -40,17 +43,6 @@ class RusswimmingApp:
         
         self.user_role = login
         self.user_password = password
-
-        """if login == "administrator" and password == "di_ego":
-            self.user_role = "administrator"
-            messagebox.showinfo("Авторизация", "Вы вошли как администратор")
-            self.create_main_widgets()
-        elif login == "avg_user" and password == "userxfa":
-            self.user_role = "avg_user"
-            messagebox.showinfo("Авторизация", "Вы вошли как пользователь")
-            self.create_main_widgets()
-        else:
-            messagebox.showerror("Ошибка авторизации", "Неверный логин или пароль")"""
         
         try:
             self.conn = psycopg2.connect(
@@ -86,13 +78,13 @@ class RusswimmingApp:
             tk.Button(frame, text="Добавление соревнования", command=self.create_competition).pack(pady=5)
             tk.Button(frame, text="Добавление результата", command=self.create_result).pack(pady=5)
             tk.Button(frame, text="Добавление региона", command=self.create_region).pack(pady=5)
+            tk.Button(frame, text="Редактирование данных спортсмена", command=self.change_delete_athlete).pack(pady=5)
+            # tk.Button(frame, text="Удаление региона", command=self.remove_region).pack(pady=5)
+            tk.Button(frame, text="Удаление всех спортсменов", command=self.clear_athlete_data).pack(pady=5)
+            tk.Button(frame, text="Удаление всех данных", command=self.clear_all_data).pack(pady=(5, 30))
 
         tk.Button(frame, text="Поиск лучших результатов", command=self.search_rating).pack(pady=5)
         tk.Button(frame, text="Поиск результатов спортсмена", command=self.search_athlete).pack(pady=5)
-        if self.user_role == "administrator":
-            tk.Button(frame, text="Редактирование или удаление спортсмена", command=self.change_delete_athlete).pack(pady=5)
-            tk.Button(frame, text="Удаление всех спортсменов", command=self.clear_athlete_data).pack(pady=5)
-            tk.Button(frame, text="Удаление всех данных", command=self.clear_all_data).pack(pady=5)
 
     def clear_all_data(self):
         if not self.connect_db():
@@ -256,12 +248,20 @@ class RusswimmingApp:
         self.place_entry = tk.Entry(frame)
         self.place_entry.pack(pady=5)
 
-        tk.Label(frame, text="ID соревнования", bg='lightblue').pack()
-        self.competition_id_entry = tk.Entry(frame)
+        tk.Label(frame, text="Соревнование", bg='lightblue').pack()
+        competitions = self.get_competitions()
+        self.competition_names = [(id_competition, f"{title} ({city}, {begin_date} - {end_date}, {pool_length} м)")
+                             for id_competition, title, city, begin_date, end_date, pool_length in competitions]
+        display_competition_names = [competition_name for _, competition_name in self.competition_names]
+        self.competition_id_entry = ttk.Combobox(frame, values=display_competition_names, state='readonly', width=60)
         self.competition_id_entry.pack(pady=5)
 
-        tk.Label(frame, text="ID спортсмена", bg='lightblue').pack()
-        self.athlete_id_entry = tk.Entry(frame)
+        tk.Label(frame, text="Спортсмен", bg='lightblue').pack()
+        athletes = self.get_athletes()
+        self.athlete_names = [(id_athlete, f"{surname} {athlete_name} ({birth_year}, {rank}, {gender}, {code_region})")
+                         for id_athlete, surname, athlete_name, birth_year, rank, gender, code_region in athletes]
+        display_athlete_names = [athlete_name for _, athlete_name in self.athlete_names]
+        self.athlete_id_entry = ttk.Combobox(frame, values=display_athlete_names, state='readonly', width=40)
         self.athlete_id_entry.pack(pady=5)
 
         tk.Button(frame, text="Добавить результат", command=lambda:self.add_result(create_window)).pack(pady=5)
@@ -345,7 +345,7 @@ class RusswimmingApp:
 
     def change_delete_athlete(self):
         create_window = Toplevel(self.root)
-        create_window.title("Редактирование или удаление спортсмена")
+        create_window.title("Поиск спортсмена для редактирования его данных")
 
         create_window.configure(bg='lightblue')
         frame = tk.Frame(create_window, bg='lightblue')
@@ -470,8 +470,13 @@ class RusswimmingApp:
         
         region_code = self.region_code_entry.get().strip()
         region_name = self.region_name_entry.get().strip()
-        federal_district = self.federal_district_entry.get().strip()
+        federal_district = self.federal_district_entry.get()
         team_leader = self.team_leader_entry.get().strip()
+
+        if len(region_code) > 3:
+            messagebox.showerror("Ошибка", "Некорректное значение кода региона")
+            create_window.destroy()
+            return
 
         try:
             query = sql.SQL("SELECT add_region({}, {}, {}, {})").format(
@@ -498,10 +503,21 @@ class RusswimmingApp:
         
         surname = self.surname_entry.get().strip()
         athlete_name = self.athlete_name_entry.get().strip()
-        birth_year = int(self.birth_year_entry.get().strip())
-        rank = self.rank_entry.get().strip().upper()
-        gender = self.gender_entry.get().strip().upper()
-        code_region = self.code_region_entry.get().strip().upper()
+        try:
+            birth_year = int(self.birth_year_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
+        rank = self.rank_entry.get()
+        gender = self.gender_entry.get()
+        code_region = self.code_region_entry.get().strip()
+
+        today = date.today()
+        if birth_year < 1908 or birth_year > today.year:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
 
         try:
             query = sql.SQL("SELECT add_athlete({}, {}, {}, {}, {}, {})").format(
@@ -530,11 +546,11 @@ class RusswimmingApp:
         
         title = self.title_entry.get().strip()
         city = self.city_entry.get().strip()
-        competition_level = self.competition_level_entry.get().strip()
-        begin_date = self.begin_date_entry.get().strip()
-        end_date = self.end_date_entry.get().strip()
-        age_group = self.age_group_entry.get().strip()
-        pool_length = self.pool_length_entry.get().strip()
+        competition_level = self.competition_level_entry.get()
+        begin_date = self.begin_date_entry.get()
+        end_date = self.end_date_entry.get()
+        age_group = self.age_group_entry.get()
+        pool_length = self.pool_length_entry.get()
 
         try:
             query = sql.SQL("SELECT add_competition({}, {}, {}, {}, {}, {}, {})").format(
@@ -562,15 +578,27 @@ class RusswimmingApp:
         if not self.connect_db():
             return
         
-        discipline_length = self.discipline_length_entry.get().strip()
-        discipline_style = self.discipline_style_entry.get().strip()
+        discipline_length = self.discipline_length_entry.get()
+        discipline_style = self.discipline_style_entry.get()
         time_result = self.time_result_entry.get().strip()
-        points = self.points_entry.get().strip()
-        result_date = self.result_date_entry.get().strip()
-        place = self.place_entry.get().strip()
-        competition_id = self.competition_id_entry.get().strip()
-        athlete_id = self.athlete_id_entry.get().strip()
-
+        try:
+            points = int(self.points_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение очков World Aquatics")
+            create_window.destroy()
+            return
+        result_date = self.result_date_entry.get()
+        try:
+            place = int(self.place_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение места (позиции)")
+            create_window.destroy()
+            return
+        selected_competition_name = self.competition_id_entry.get()
+        competition_id = next((id_competition for id_competition, competition_name in self.competition_names if competition_name == selected_competition_name), None)
+        selected_athlete_name = self.athlete_id_entry.get()
+        athlete_id = next((id_athlete for id_athlete, athlete_name in self.athlete_names if athlete_name == selected_athlete_name), None)
+       
         try:
             query = sql.SQL("SELECT add_result({}, {}, {}, {}, {}, {}, {}, {})").format(
                 sql.Literal(discipline_length),
@@ -598,20 +626,40 @@ class RusswimmingApp:
         if not self.connect_db():
             return
         
-        rating_begin_date = self.rating_begin_date_entry.get().strip()
-        rating_end_date = self.rating_end_date_entry.get().strip()
-        min_age = self.min_age_entry.get().strip()
-        max_age = self.max_age_entry.get().strip()
-        rating_gender = self.rating_gender_entry.get().strip().upper()
-        rating_discipline_length = self.rating_discipline_length_entry.get().strip()
-        rating_discipline_style = self.rating_discipline_style_entry.get().strip()
-        rating_pool_length = self.rating_pool_length_entry.get().strip()
+        rating_begin_date = self.rating_begin_date_entry.get()
+        rating_end_date = self.rating_end_date_entry.get()
+        try:
+            min_age = int(self.min_age_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение минимального возраста")
+            create_window.destroy()
+            return
+        try:
+            max_age = int(self.max_age_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение максимального возраста")
+            create_window.destroy()
+            return
+        rating_gender = self.rating_gender_entry.get()
+        rating_discipline_length = self.rating_discipline_length_entry.get()
+        rating_discipline_style = self.rating_discipline_style_entry.get()
+        rating_pool_length = self.rating_pool_length_entry.get()
 
-        if min_age == "":
+        """if min_age == "":
             min_age = 0
         
         if max_age == "":
-            max_age = 100
+            max_age = 100"""
+        
+        if min_age > 116:
+            messagebox.showerror("Ошибка", "Некорректное значение минимального возраста")
+            create_window.destroy()
+            return
+
+        if max_age > 116:
+            messagebox.showerror("Ошибка", "Некорректное значение максимального возраста")
+            create_window.destroy()
+            return
 
         try:
             query = sql.SQL("SELECT * FROM get_results({}, {}, {}, {}, {}, {}, {}, {})").format(
@@ -678,10 +726,21 @@ class RusswimmingApp:
         
         cd_surname = self.cd_surname_entry.get().strip()
         cd_name = self.cd_name_entry.get().strip()
-        cd_birth_year = self.cd_birth_year_entry.get().strip()
-        cd_rank = self.cd_rank_entry.get().strip().upper()
-        cd_gender = self.cd_gender_entry.get().strip().upper()
-        cd_code_region = self.cd_code_region_entry.get().strip().upper()
+        try:
+            cd_birth_year = int(self.cd_birth_year_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
+        cd_rank = self.cd_rank_entry.get()
+        cd_gender = self.cd_gender_entry.get()
+        cd_code_region = self.cd_code_region_entry.get()
+
+        today = date.today()
+        if cd_birth_year < 1908 or cd_birth_year > today.year:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
 
         try:
             query = sql.SQL("SELECT delete_athlete({}, {}, {}, {}, {}, {})").format(
@@ -708,10 +767,21 @@ class RusswimmingApp:
         
         cd_surname = self.cd_surname_entry.get().strip()
         cd_name = self.cd_name_entry.get().strip()
-        cd_birth_year = self.cd_birth_year_entry.get().strip()
-        cd_rank = self.cd_rank_entry.get().strip().upper()
-        cd_gender = self.cd_gender_entry.get().strip().upper()
-        cd_code_region = self.cd_code_region_entry.get().strip().upper()
+        try:
+            cd_birth_year = int(self.cd_birth_year_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
+        cd_rank = self.cd_rank_entry.get()
+        cd_gender = self.cd_gender_entry.get()
+        cd_code_region = self.cd_code_region_entry.get()
+
+        today = date.today()
+        if cd_birth_year < 1908 or cd_birth_year > today.year:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
 
         try:
             query = sql.SQL("SELECT get_athlete_id({}, {}, {}, {}, {}, {})").format(
@@ -737,17 +807,12 @@ class RusswimmingApp:
             create_window.destroy()
     
     def update_window(self, cd_id):
-        if isinstance(cd_id, tuple):
-            cd_id = cd_id[0]
-
         update_window = Toplevel(self.root)
         update_window.title("Редактирование спортсмена")
 
         update_window.configure(bg='lightblue')
         frame = tk.Frame(update_window, bg='lightblue')
         frame.pack(expand=True)
-
-        tk.Label(frame, text=f"Редактирование спортсмена с ID: {cd_id}", bg='lightblue', font=('Arial', 12, 'bold')).pack(pady=10)
 
         tk.Label(frame, text="Фамилия", bg='lightblue').pack()
         new_surname_entry = tk.Entry(frame)
@@ -776,10 +841,21 @@ class RusswimmingApp:
         def update_athlete_data():
             new_surname = new_surname_entry.get().strip()
             new_name = new_name_entry.get().strip()
-            new_birth_year = new_birth_year_entry.get().strip()
-            new_rank = new_rank_entry.get().strip().upper()
-            new_gender = new_gender_entry.get().strip().upper()
-            new_code_region = new_code_region_entry.get().strip().upper()
+            try:
+                new_birth_year = new_birth_year_entry.get().strip()
+            except ValueError:
+                messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+                update_window.destroy()
+                return
+            new_rank = new_rank_entry.get()
+            new_gender = new_gender_entry.get()
+            new_code_region = new_code_region_entry.get()
+
+            today = date.today()
+            if new_birth_year < 1908 or new_birth_year > today.year:
+                messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+                update_window.destroy()
+                return
 
             try:
                 update_query = sql.SQL("SELECT update_athlete({}, {}, {}, {}, {}, {}, {})").format(
@@ -808,10 +884,21 @@ class RusswimmingApp:
         
         search_surname = self.search_surname_entry.get().strip()
         search_name = self.search_name_entry.get().strip()
-        search_gender = self.search_gender_entry.get().strip().upper()
-        search_b_y = self.search_b_y_entry.get().strip()
-        search_rank = self.search_rank_entry.get().strip().upper()
-        search_c_r = self.search_c_r_entry.get().strip().upper()
+        search_gender = self.search_gender_entry.get()
+        try:
+            search_b_y = int(self.search_b_y_entry.get().strip())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
+        search_rank = self.search_rank_entry.get()
+        search_c_r = self.search_c_r_entry.get()
+
+        today = date.today()
+        if search_b_y < 1908 or search_b_y > today.year:
+            messagebox.showerror("Ошибка", "Некорректное значение года рождения")
+            create_window.destroy()
+            return
 
         try:
             query = sql.SQL("SELECT * FROM get_athlete_results({}, {}, {}, {}, {}, {})").format(
@@ -859,6 +946,32 @@ class RusswimmingApp:
              
             for row in rows:
                 treeview.insert("", "end", values=row)
+
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+
+    def get_athletes(self):
+        if not self.connect_db():
+            return
+
+        try:
+            query = sql.SQL("SELECT * FROM get_athletes()")
+            self.cursor.execute(query)
+            athletes = self.cursor.fetchall()
+            return athletes
+
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+
+    def get_competitions(self):
+        if not self.connect_db():
+            return
+
+        try:
+            query = sql.SQL("SELECT * FROM get_competitions()")
+            self.cursor.execute(query)
+            competitions = self.cursor.fetchall()
+            return competitions
 
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
