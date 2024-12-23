@@ -72,6 +72,11 @@ BEGIN
     FOR EACH ROW
     EXECUTE FUNCTION update_athlete_count();
 
+    CREATE TRIGGER update_athlete_count_after_update
+    AFTER UPDATE ON Athlete
+    FOR EACH ROW
+    EXECUTE FUNCTION update_athlete_count();
+
     CREATE INDEX idx_athlete_search ON Athlete(surname, athlete_name, birth_year, rank, gender, code_region);
 END;
 $$
@@ -230,6 +235,11 @@ $$
 CREATE OR REPLACE FUNCTION delete_region(del_region_code CHAR(3))
 RETURNS VOID AS $$
 BEGIN
+    DELETE FROM Result
+    WHERE athlete_id IN (
+        SELECT id_athlete FROM Athlete WHERE code_region = del_region_code
+    );
+
     DELETE FROM Athlete
     WHERE code_region = del_region_code;
 
@@ -250,6 +260,16 @@ BEGIN
         UPDATE Region
         SET athlete_count = GREATEST(0, athlete_count - 1)
         WHERE region_code = OLD.code_region;
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF OLD.code_region IS DISTINCT FROM NEW.code_region THEN
+            UPDATE Region
+            SET athlete_count = GREATEST(0, athlete_count - 1)
+            WHERE region_code = OLD.code_region;
+
+            UPDATE Region
+            SET athlete_count = athlete_count + 1
+            WHERE region_code = NEW.code_region;
+        END IF;
     END IF;
 
     RETURN NEW;

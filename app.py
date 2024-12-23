@@ -10,8 +10,8 @@ class RusswimmingApp:
     def __init__(self):
         self.conn = None
         self.cursor = None
-        self.user_role = None # Логин и роль
-        self.user_password = None # Пароль
+        self.user_role = None
+        self.user_password = None
         self.athlete_names = []
         self.competition_names = []
         
@@ -79,12 +79,64 @@ class RusswimmingApp:
             tk.Button(frame, text="Добавление результата", command=self.create_result).pack(pady=5)
             tk.Button(frame, text="Добавление региона", command=self.create_region).pack(pady=5)
             tk.Button(frame, text="Редактирование данных спортсмена", command=self.change_delete_athlete).pack(pady=5)
-            # tk.Button(frame, text="Удаление региона", command=self.remove_region).pack(pady=5)
+            tk.Button(frame, text="Удаление региона", command=self.remove_region).pack(pady=5)
             tk.Button(frame, text="Удаление всех спортсменов", command=self.clear_athlete_data).pack(pady=5)
             tk.Button(frame, text="Удаление всех данных", command=self.clear_all_data).pack(pady=(5, 30))
 
         tk.Button(frame, text="Поиск лучших результатов", command=self.search_rating).pack(pady=5)
         tk.Button(frame, text="Поиск результатов спортсмена", command=self.search_athlete).pack(pady=5)
+
+    def remove_region(self):
+        create_window = Toplevel(self.root)
+        create_window.title("Удаление региона с его спортсменами и результатами")
+
+        create_window.configure(bg='lightblue')
+        frame = tk.Frame(create_window, bg='lightblue')
+        frame.pack(expand=True)
+
+        tk.Label(frame, text="Выберите регион", bg='lightblue').pack()
+        regions = self.get_regions()
+        self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
+                         for region_code, region_name, federal_district, team_leader, athlete_count in regions]
+        display_region_names = [region_name for _, region_name in self.region_names]
+        self.region_id_entry = ttk.Combobox(frame, values=display_region_names, state='readonly', width=60)
+        self.region_id_entry.pack(pady=5)
+
+        tk.Button(frame, text="Удалить регион", command=lambda:self.delete_region(create_window)).pack(pady=5)
+
+    def delete_region(self, create_window):
+        if not self.connect_db():
+            return
+        
+        selected_region_name = self.region_id_entry.get()
+        region_id = next((region_code for region_code, region_name in self.region_names if region_name == selected_region_name), None)
+
+        try:
+            query = sql.SQL("SELECT delete_region({})").format(
+                sql.Literal(region_id)
+            )
+            self.cursor.execute(query)
+            self.conn.commit()
+            messagebox.showinfo("Информация", "Регион с его спортсменами и их результатами удален.")
+        
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+        
+        finally:
+            create_window.destroy()    
+
+    def get_regions(self):
+        if not self.connect_db():
+            return
+
+        try:
+            query = sql.SQL("SELECT * FROM get_regions()")
+            self.cursor.execute(query)
+            regions = self.cursor.fetchall()
+            return regions
+
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
 
     def clear_all_data(self):
         if not self.connect_db():
@@ -166,8 +218,12 @@ class RusswimmingApp:
         self.gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Код региона", bg='lightblue').pack()
-        self.code_region_entry = tk.Entry(frame)
+        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        regions = self.get_regions()
+        self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
+                         for region_code, region_name, federal_district, team_leader, athlete_count in regions]
+        display_region_names = [region_name for _, region_name in self.region_names]
+        self.code_region_entry = ttk.Combobox(frame, values=display_region_names, state='readonly', width=60)
         self.code_region_entry.pack(pady=5)
 
         tk.Button(frame, text="Добавить спортсмена", command=lambda:self.add_athlete(create_window)).pack(pady=5)
@@ -337,8 +393,12 @@ class RusswimmingApp:
         self.search_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.search_rank_entry.pack(pady=5)
 
-        tk.Label(frame, text="Код региона", bg='lightblue').pack()
-        self.search_c_r_entry = tk.Entry(frame)
+        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        regions = self.get_regions()
+        self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
+                         for region_code, region_name, federal_district, team_leader, athlete_count in regions]
+        display_region_names = [region_name for _, region_name in self.region_names]
+        self.search_c_r_entry = ttk.Combobox(frame, values=display_region_names, state='readonly', width=60)
         self.search_c_r_entry.pack(pady=5)
 
         tk.Button(frame, text="Показать результаты", command=lambda:self.get_athlete_results(create_window)).pack(pady=5)
@@ -371,8 +431,12 @@ class RusswimmingApp:
         self.cd_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.cd_rank_entry.pack(pady=5)
 
-        tk.Label(frame, text="Код региона", bg='lightblue').pack()
-        self.cd_code_region_entry = tk.Entry(frame)
+        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        regions = self.get_regions()
+        self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
+                         for region_code, region_name, federal_district, team_leader, athlete_count in regions]
+        display_region_names = [region_name for _, region_name in self.region_names]
+        self.cd_code_region_entry = ttk.Combobox(frame, values=display_region_names, state='readonly', width=60)
         self.cd_code_region_entry.pack(pady=5)
 
         tk.Button(frame, text="Редактировать", command=lambda:self.change_athlete(create_window)).pack(pady=5)
@@ -511,7 +575,9 @@ class RusswimmingApp:
             return
         rank = self.rank_entry.get()
         gender = self.gender_entry.get()
-        code_region = self.code_region_entry.get().strip()
+        # code_region = self.code_region_entry.get().strip()
+        selected_region_name = self.code_region_entry.get()
+        code_region = next((region_code for region_code, region_name in self.region_names if region_name == selected_region_name), None)
 
         today = date.today()
         if birth_year < 1908 or birth_year > today.year:
@@ -748,7 +814,8 @@ class RusswimmingApp:
             return
         cd_rank = self.cd_rank_entry.get()
         cd_gender = self.cd_gender_entry.get()
-        cd_code_region = self.cd_code_region_entry.get()
+        selected_region_name = self.cd_code_region_entry.get()
+        cd_code_region = next((region_code for region_code, region_name in self.region_names if region_name == selected_region_name), None)
 
         today = date.today()
         if cd_birth_year < 1908 or cd_birth_year > today.year:
@@ -789,7 +856,8 @@ class RusswimmingApp:
             return
         cd_rank = self.cd_rank_entry.get()
         cd_gender = self.cd_gender_entry.get()
-        cd_code_region = self.cd_code_region_entry.get()
+        selected_region_name = self.cd_code_region_entry.get()
+        cd_code_region = next((region_code for region_code, region_name in self.region_names if region_name == selected_region_name), None)
 
         today = date.today()
         if cd_birth_year < 1908 or cd_birth_year > today.year:
@@ -848,22 +916,27 @@ class RusswimmingApp:
         new_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         new_gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Код региона", bg='lightblue').pack()
-        new_code_region_entry = tk.Entry(frame)
-        new_code_region_entry.pack(pady=5)
+        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        regions = self.get_regions()
+        self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
+                         for region_code, region_name, federal_district, team_leader, athlete_count in regions]
+        display_region_names = [region_name for _, region_name in self.region_names]
+        self.new_code_region_entry = ttk.Combobox(frame, values=display_region_names, state='readonly', width=60)
+        self.new_code_region_entry.pack(pady=5)
 
         def update_athlete_data():
             new_surname = new_surname_entry.get().strip()
             new_name = new_name_entry.get().strip()
             try:
-                new_birth_year = new_birth_year_entry.get().strip()
+                new_birth_year = int(new_birth_year_entry.get().strip())
             except ValueError:
                 messagebox.showerror("Ошибка", "Некорректное значение года рождения")
                 update_window.destroy()
                 return
             new_rank = new_rank_entry.get()
             new_gender = new_gender_entry.get()
-            new_code_region = new_code_region_entry.get()
+            selected_region_name = self.new_code_region_entry.get()
+            new_code_region = next((region_code for region_code, region_name in self.region_names if region_name == selected_region_name), None)
 
             today = date.today()
             if new_birth_year < 1908 or new_birth_year > today.year:
@@ -906,7 +979,8 @@ class RusswimmingApp:
             create_window.destroy()
             return
         search_rank = self.search_rank_entry.get()
-        search_c_r = self.search_c_r_entry.get()
+        selected_region_name = self.search_c_r_entry.get()
+        search_c_r = next((region_code for region_code, region_name in self.region_names if region_name == selected_region_name), None)
 
         today = date.today()
         if search_b_y < 1908 or search_b_y > today.year:
@@ -928,6 +1002,22 @@ class RusswimmingApp:
 
             results_window = tk.Toplevel(self.root)
             results_window.title("Результаты спортсмена")
+
+            results_window.configure(bg='lightblue')
+            athlete_info_frame = tk.Frame(results_window, bg='lightblue')
+            athlete_info_frame.pack(pady=10)
+
+            athlete_info_label = tk.Label(athlete_info_frame, bg='lightblue', 
+                                          text=(
+                                              f"Фамилия: {search_surname}\n"
+                                              f"Имя: {search_name}\n"
+                                              f"Год рождения: {search_b_y}\n"
+                                              f"Пол: {search_gender}\n"
+                                              f"Разряд: {search_rank}\n"
+                                              f"Код региона: {search_c_r}"
+                                            )
+            )
+            athlete_info_label.pack()
 
             treeview = ttk.Treeview(results_window)
             treeview["columns"] = ("Дистанция", "Стиль", "Соревнование", "Бассейн", "Результат", "Очки",
