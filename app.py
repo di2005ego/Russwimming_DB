@@ -793,7 +793,6 @@ class RusswimmingApp:
 
             self.cursor.execute(query)
             rows = self.cursor.fetchall()
-             
             for row in rows:
                 treeview.insert("", "end", values=row)
 

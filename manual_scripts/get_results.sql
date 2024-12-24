@@ -1,5 +1,5 @@
 --Затем создаём две самые главные функции и даем права на их выполнение avg_user'у
-CREATE OR REPLACE FUNCTION get_results(rating_begin_date DATE, rating_end_date DATE, discipline_length INT, discipline_style VARCHAR, rating_gender CHAR, rating_pool_length INT, min_age INT DEFAULT 0, max_age INT DEFAULT 100) 
+CREATE OR REPLACE FUNCTION get_results(rating_begin_date DATE, rating_end_date DATE, discipline_len INT, discipline_st VARCHAR, rating_gender CHAR, rating_pool_length INT, min_age INT DEFAULT 0, max_age INT DEFAULT 100) 
 RETURNS TABLE(rank_number BIGINT, surname VARCHAR, athlete_name VARCHAR, birth_year INT, rank VARCHAR, region_name VARCHAR, competition_title VARCHAR, city VARCHAR, time_result VARCHAR, points INT, result_date DATE) AS $$
 BEGIN
     RETURN QUERY 
@@ -22,6 +22,8 @@ BEGIN
         AND (EXTRACT(YEAR FROM CURRENT_DATE) - s.birth_year) BETWEEN min_age AND max_age
         AND s.gender = rating_gender
         AND c.pool_length = rating_pool_length
+        AND res.discipline_length = discipline_len
+        AND res.discipline_style = discipline_st
       ORDER BY res.points DESC;
 END;
 $$
