@@ -23,15 +23,15 @@ class RusswimmingApp:
         self.root.mainloop()
 
     def create_login_widgets(self):
-        self.root.configure(bg='lightblue')
-        frame = tk.Frame(self.root, bg='lightblue')
+        self.root.configure(bg='#ababf7')
+        frame = tk.Frame(self.root, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Логин", bg='lightblue').pack(pady=5)
+        tk.Label(frame, text="Логин", bg='#ababf7').pack(pady=5)
         self.login_entry = tk.Entry(frame)
         self.login_entry.pack(pady=5)
 
-        tk.Label(frame, text="Пароль", bg='lightblue').pack(pady=5)
+        tk.Label(frame, text="Пароль", bg='#ababf7').pack(pady=5)
         self.password_entry = tk.Entry(frame, show='•')
         self.password_entry.pack(pady=5)
 
@@ -69,17 +69,17 @@ class RusswimmingApp:
         frame = tk.Frame(self.root)
         frame.pack(expand=True)
 
-        frame.configure(bg='lightblue')
+        frame.configure(bg='#ababf7')
 
         if self.user_role == "administrator":
             tk.Button(frame, text="Создать базу данных", command=self.create_database).pack(pady=5)
             tk.Button(frame, text="Удалить базу данных", command=self.delete_database).pack(pady=5)
+            tk.Button(frame, text="Добавление региона", command=self.create_region).pack(pady=5)
+            tk.Button(frame, text="Удаление региона", command=self.remove_region).pack(pady=5)
             tk.Button(frame, text="Добавление спортсмена", command=self.create_athlete).pack(pady=5)
+            tk.Button(frame, text="Редактирование или удаление спортсмена", command=self.change_delete_athlete).pack(pady=5)
             tk.Button(frame, text="Добавление соревнования", command=self.create_competition).pack(pady=5)
             tk.Button(frame, text="Добавление результата", command=self.create_result).pack(pady=5)
-            tk.Button(frame, text="Добавление региона", command=self.create_region).pack(pady=5)
-            tk.Button(frame, text="Редактирование данных спортсмена", command=self.change_delete_athlete).pack(pady=5)
-            tk.Button(frame, text="Удаление региона", command=self.remove_region).pack(pady=5)
             tk.Button(frame, text="Удаление всех спортсменов", command=self.clear_athlete_data).pack(pady=5)
             tk.Button(frame, text="Удаление всех данных", command=self.clear_all_data).pack(pady=(5, 30))
 
@@ -90,11 +90,11 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Удаление региона с его спортсменами и результатами")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Выберите регион", bg='lightblue').pack()
+        tk.Label(frame, text="Выберите регион", bg='#ababf7').pack()
         regions = self.get_regions()
         self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
                          for region_code, region_name, federal_district, team_leader, athlete_count in regions]
@@ -120,7 +120,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Регион с его спортсменами и их результатами удален.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Регион не существует")
         
         finally:
             create_window.destroy()    
@@ -136,7 +136,7 @@ class RusswimmingApp:
             return regions
 
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Отсутствуют регионы")
 
     def clear_all_data(self):
         if not self.connect_db():
@@ -149,7 +149,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Данные удалены.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Отсутствуют данные.")
 
     def clear_athlete_data(self):
         if not self.connect_db():
@@ -162,29 +162,29 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Спортсмены удалены.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Спортсмены отсутствуют.")
 
     def create_region(self):
         create_window = Toplevel(self.root)
         create_window.title("Добавление региона")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Код", bg='lightblue').pack()
+        tk.Label(frame, text="Код", bg='#ababf7').pack()
         self.region_code_entry = tk.Entry(frame)
         self.region_code_entry.pack(pady=5)
 
-        tk.Label(frame, text="Название", bg='lightblue').pack()
+        tk.Label(frame, text="Название", bg='#ababf7').pack()
         self.region_name_entry = tk.Entry(frame)
         self.region_name_entry.pack(pady=5)
 
-        tk.Label(frame, text="Федеральный округ или город Федерального значения", bg='lightblue').pack()
+        tk.Label(frame, text="Федеральный округ или город Федерального значения", bg='#ababf7').pack()
         self.federal_district_entry = ttk.Combobox(frame, values=["ЦФО", "ПФО", "СЗФО", "ЮФО, СКФО и Севастополь", "УрФО", "СФО", "ДВФО", "Москва", "Санкт-Петербург"], state='readonly')
         self.federal_district_entry.pack(pady=5)
 
-        tk.Label(frame, text="Руководитель", bg='lightblue').pack()
+        tk.Label(frame, text="Руководитель", bg='#ababf7').pack()
         self.team_leader_entry = tk.Entry(frame)
         self.team_leader_entry.pack(pady=5)
 
@@ -194,31 +194,31 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Добавление спортсмена")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Фамилия", bg='lightblue').pack()
+        tk.Label(frame, text="Фамилия", bg='#ababf7').pack()
         self.surname_entry = tk.Entry(frame)
         self.surname_entry.pack(pady=5)
 
-        tk.Label(frame, text="Имя", bg='lightblue').pack()
+        tk.Label(frame, text="Имя", bg='#ababf7').pack()
         self.athlete_name_entry = tk.Entry(frame)
         self.athlete_name_entry.pack(pady=5)
 
-        tk.Label(frame, text="Год рождения", bg='lightblue').pack()
+        tk.Label(frame, text="Год рождения", bg='#ababf7').pack()
         self.birth_year_entry = tk.Entry(frame)
         self.birth_year_entry.pack(pady=5)
 
-        tk.Label(frame, text="Разряд", bg='lightblue').pack()
+        tk.Label(frame, text="Разряд", bg='#ababf7').pack()
         self.rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.rank_entry.pack(pady=5)
 
-        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        tk.Label(frame, text="Пол", bg='#ababf7').pack()
         self.gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        tk.Label(frame, text="Регион", bg='#ababf7').pack()
         regions = self.get_regions()
         self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
                          for region_code, region_name, federal_district, team_leader, athlete_count in regions]
@@ -232,39 +232,39 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Добавление соревнования")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Название", bg='lightblue').pack()
+        tk.Label(frame, text="Название", bg='#ababf7').pack()
         self.title_entry = tk.Entry(frame)
         self.title_entry.pack(pady=5)
 
-        tk.Label(frame, text="Город", bg='lightblue').pack()
+        tk.Label(frame, text="Город", bg='#ababf7').pack()
         self.city_entry = tk.Entry(frame)
         self.city_entry.pack(pady=5)
 
-        tk.Label(frame, text="Уровень", bg='lightblue').pack()
+        tk.Label(frame, text="Уровень", bg='#ababf7').pack()
         self.competition_level_entry = ttk.Combobox(frame, values=["Международный", "Всероссийский", "Межрегиональный", "Региональный"], state='readonly')
         self.competition_level_entry.pack(pady=5)
 
-        tk.Label(frame, text="Дата начала", bg='lightblue').pack()
+        tk.Label(frame, text="Дата начала", bg='#ababf7').pack()
         self.begin_date_entry = DateEntry(frame, width=12, background='darkblue',
                                    foreground='white', borderwidth=2,
                                    date_pattern='dd/mm/yyyy')
         self.begin_date_entry.pack(pady=5)
 
-        tk.Label(frame, text="Дата окончания", bg='lightblue').pack()
+        tk.Label(frame, text="Дата окончания", bg='#ababf7').pack()
         self.end_date_entry = DateEntry(frame, width=12, background='darkblue',
                                    foreground='white', borderwidth=2,
                                    date_pattern='dd/mm/yyyy')
         self.end_date_entry.pack(pady=5)
 
-        tk.Label(frame, text="Возрастная группа", bg='lightblue').pack()
+        tk.Label(frame, text="Возрастная группа", bg='#ababf7').pack()
         self.age_group_entry = ttk.Combobox(frame, values=["Мужчины, женщины", "Юниоры, юниорки (16-18 лет)", "Юноши, девушки (14-15 лет)", "Юноши, девушки (11-13 лет)"], state='readonly')
         self.age_group_entry.pack(pady=5)
 
-        tk.Label(frame, text="Бассейн, м", bg='lightblue').pack()
+        tk.Label(frame, text="Бассейн, м", bg='#ababf7').pack()
         self.pool_length_entry = ttk.Combobox(frame, values=[25, 50], state='readonly')
         self.pool_length_entry.pack(pady=5)
 
@@ -274,37 +274,37 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Добавление результата")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Длина дисциплины, м", bg='lightblue').pack()
+        tk.Label(frame, text="Длина дисциплины, м", bg='#ababf7').pack()
         self.discipline_length_entry = ttk.Combobox(frame, values=[50, 100, 200, 400, 800, 1500], state='readonly')
         self.discipline_length_entry.pack(pady=5)
 
-        tk.Label(frame, text="Стиль дисциплины", bg='lightblue').pack()
+        tk.Label(frame, text="Стиль дисциплины", bg='#ababf7').pack()
         self.discipline_style_entry = ttk.Combobox(frame, values=["Баттерфляй", "На спине", "Брасс", "Вольный стиль", "Комплекс"], state='readonly')
         self.discipline_style_entry.pack(pady=5)
 
-        tk.Label(frame, text="Результат", bg='lightblue').pack()
+        tk.Label(frame, text="Результат", bg='#ababf7').pack()
         self.time_result_entry = tk.Entry(frame)
         self.time_result_entry.pack(pady=5)
 
-        tk.Label(frame, text="Очки", bg='lightblue').pack()
+        tk.Label(frame, text="Очки", bg='#ababf7').pack()
         self.points_entry = tk.Entry(frame)
         self.points_entry.pack(pady=5)
 
-        tk.Label(frame, text="Дата", bg='lightblue').pack()
+        tk.Label(frame, text="Дата", bg='#ababf7').pack()
         self.result_date_entry = DateEntry(frame, width=12, background='darkblue',
                                    foreground='white', borderwidth=2,
                                    date_pattern='dd/mm/yyyy')
         self.result_date_entry.pack(pady=5)
 
-        tk.Label(frame, text="Позиция (место)", bg='lightblue').pack()
+        tk.Label(frame, text="Позиция (место)", bg='#ababf7').pack()
         self.place_entry = tk.Entry(frame)
         self.place_entry.pack(pady=5)
 
-        tk.Label(frame, text="Соревнование", bg='lightblue').pack()
+        tk.Label(frame, text="Соревнование", bg='#ababf7').pack()
         competitions = self.get_competitions()
         self.competition_names = [(id_competition, f"{title} ({city}, {begin_date} - {end_date}, {pool_length} м)")
                              for id_competition, title, city, begin_date, end_date, pool_length in competitions]
@@ -312,7 +312,7 @@ class RusswimmingApp:
         self.competition_id_entry = ttk.Combobox(frame, values=display_competition_names, state='readonly', width=60)
         self.competition_id_entry.pack(pady=5)
 
-        tk.Label(frame, text="Спортсмен", bg='lightblue').pack()
+        tk.Label(frame, text="Спортсмен", bg='#ababf7').pack()
         athletes = self.get_athletes()
         self.athlete_names = [(id_athlete, f"{surname} {athlete_name} ({birth_year}, {rank}, {gender}, {code_region})")
                          for id_athlete, surname, athlete_name, birth_year, rank, gender, code_region in athletes]
@@ -326,11 +326,11 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Поиск лучших результатов")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Интересующие даты", bg='lightblue').pack()
+        tk.Label(frame, text="Интересующие даты", bg='#ababf7').pack()
         self.rating_begin_date_entry = DateEntry(frame, width=12, background='darkblue',
                                    foreground='white', borderwidth=2,
                                    date_pattern='dd/mm/yyyy')
@@ -341,25 +341,25 @@ class RusswimmingApp:
                                    date_pattern='dd/mm/yyyy')
         self.rating_end_date_entry.pack(pady=5)
 
-        tk.Label(frame, text="Возраст", bg='lightblue').pack()
+        tk.Label(frame, text="Возраст (от и до)", bg='#ababf7').pack()
         self.min_age_entry = tk.Entry(frame)
         self.min_age_entry.pack(pady=5)
 
         self.max_age_entry = tk.Entry(frame)
         self.max_age_entry.pack(pady=5)
 
-        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        tk.Label(frame, text="Пол", bg='#ababf7').pack()
         self.rating_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.rating_gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Дисциплина", bg='lightblue').pack()
+        tk.Label(frame, text="Дисциплина", bg='#ababf7').pack()
         self.rating_discipline_length_entry = ttk.Combobox(frame, values=[50, 100, 200, 400, 800, 1500], state='readonly')
         self.rating_discipline_length_entry.pack(pady=5)
 
         self.rating_discipline_style_entry = ttk.Combobox(frame, values=["Баттерфляй", "На спине", "Брасс", "Вольный стиль", "Комплекс"], state='readonly')
         self.rating_discipline_style_entry.pack(pady=5)
 
-        tk.Label(frame, text="Бассейн", bg='lightblue').pack()
+        tk.Label(frame, text="Бассейн", bg='#ababf7').pack()
         self.rating_pool_length_entry = ttk.Combobox(frame, values=[25, 50], state='readonly')
         self.rating_pool_length_entry.pack(pady=5)
 
@@ -369,31 +369,31 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Поиск результатов спортсмена")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Фамилия", bg='lightblue').pack()
+        tk.Label(frame, text="Фамилия", bg='#ababf7').pack()
         self.search_surname_entry = tk.Entry(frame)
         self.search_surname_entry.pack(pady=5)
 
-        tk.Label(frame, text="Имя", bg='lightblue').pack()
+        tk.Label(frame, text="Имя", bg='#ababf7').pack()
         self.search_name_entry = tk.Entry(frame)
         self.search_name_entry.pack(pady=5)
 
-        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        tk.Label(frame, text="Пол", bg='#ababf7').pack()
         self.search_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.search_gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Год рождения", bg='lightblue').pack()
+        tk.Label(frame, text="Год рождения", bg='#ababf7').pack()
         self.search_b_y_entry = tk.Entry(frame)
         self.search_b_y_entry.pack(pady=5)
 
-        tk.Label(frame, text="Разряд", bg='lightblue').pack()
+        tk.Label(frame, text="Разряд", bg='#ababf7').pack()
         self.search_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.search_rank_entry.pack(pady=5)
 
-        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        tk.Label(frame, text="Регион", bg='#ababf7').pack()
         regions = self.get_regions()
         self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
                          for region_code, region_name, federal_district, team_leader, athlete_count in regions]
@@ -407,31 +407,31 @@ class RusswimmingApp:
         create_window = Toplevel(self.root)
         create_window.title("Поиск спортсмена для редактирования его данных")
 
-        create_window.configure(bg='lightblue')
-        frame = tk.Frame(create_window, bg='lightblue')
+        create_window.configure(bg='#ababf7')
+        frame = tk.Frame(create_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Фамилия", bg='lightblue').pack()
+        tk.Label(frame, text="Фамилия", bg='#ababf7').pack()
         self.cd_surname_entry = tk.Entry(frame)
         self.cd_surname_entry.pack(pady=5)
 
-        tk.Label(frame, text="Имя", bg='lightblue').pack()
+        tk.Label(frame, text="Имя", bg='#ababf7').pack()
         self.cd_name_entry = tk.Entry(frame)
         self.cd_name_entry.pack(pady=5)
 
-        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        tk.Label(frame, text="Пол", bg='#ababf7').pack()
         self.cd_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         self.cd_gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Год рождения", bg='lightblue').pack()
+        tk.Label(frame, text="Год рождения", bg='#ababf7').pack()
         self.cd_birth_year_entry = tk.Entry(frame)
         self.cd_birth_year_entry.pack(pady=5)
 
-        tk.Label(frame, text="Разряд", bg='lightblue').pack()
+        tk.Label(frame, text="Разряд", bg='#ababf7').pack()
         self.cd_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         self.cd_rank_entry.pack(pady=5)
 
-        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        tk.Label(frame, text="Регион", bg='#ababf7').pack()
         regions = self.get_regions()
         self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
                          for region_code, region_name, federal_district, team_leader, athlete_count in regions]
@@ -460,7 +460,7 @@ class RusswimmingApp:
             return True
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
             return False
 
     def create_database(self):
@@ -494,7 +494,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "База данных создана.")
 
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "База данных уже существует.")
 
         finally:
             cursor.close()
@@ -522,7 +522,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "База данных удалена.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
 
         finally:
             cursor.close()
@@ -556,7 +556,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Регион добавлен.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
 
         finally:
             create_window.destroy()
@@ -601,7 +601,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Спортсмен добавлен.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
         
         finally:
             create_window.destroy()
@@ -635,7 +635,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Соревнование добавлено.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
 
         finally:
             create_window.destroy()
@@ -690,7 +690,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Результат добавлен.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
         
         finally:
             create_window.destroy()
@@ -798,7 +798,7 @@ class RusswimmingApp:
                 treeview.insert("", "end", values=row)
 
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
 
     def remove_athlete(self, create_window):
         if not self.connect_db():
@@ -837,7 +837,7 @@ class RusswimmingApp:
             messagebox.showinfo("Информация", "Спортсмен удален.")
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Спортсмен или база данных отсутствует.")
         
         finally:
             create_window.destroy()
@@ -883,7 +883,7 @@ class RusswimmingApp:
             self.update_window(cd_id)
         
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Спортсмен или база данных отсутствует.")
         
         finally:
             create_window.destroy()
@@ -892,31 +892,31 @@ class RusswimmingApp:
         update_window = Toplevel(self.root)
         update_window.title("Редактирование спортсмена")
 
-        update_window.configure(bg='lightblue')
-        frame = tk.Frame(update_window, bg='lightblue')
+        update_window.configure(bg='#ababf7')
+        frame = tk.Frame(update_window, bg='#ababf7')
         frame.pack(expand=True)
 
-        tk.Label(frame, text="Фамилия", bg='lightblue').pack()
+        tk.Label(frame, text="Фамилия", bg='#ababf7').pack()
         new_surname_entry = tk.Entry(frame)
         new_surname_entry.pack(pady=5)
 
-        tk.Label(frame, text="Имя", bg='lightblue').pack()
+        tk.Label(frame, text="Имя", bg='#ababf7').pack()
         new_name_entry = tk.Entry(frame)
         new_name_entry.pack(pady=5)
 
-        tk.Label(frame, text="Год рождения", bg='lightblue').pack()
+        tk.Label(frame, text="Год рождения", bg='#ababf7').pack()
         new_birth_year_entry = tk.Entry(frame)
         new_birth_year_entry.pack(pady=5)
 
-        tk.Label(frame, text="Разряд", bg='lightblue').pack()
+        tk.Label(frame, text="Разряд", bg='#ababf7').pack()
         new_rank_entry = ttk.Combobox(frame, values=["ЗМС", "МСМК", "МС", "КМС", "I", "II"], state='readonly')
         new_rank_entry.pack(pady=5)
  
-        tk.Label(frame, text="Пол", bg='lightblue').pack()
+        tk.Label(frame, text="Пол", bg='#ababf7').pack()
         new_gender_entry = ttk.Combobox(frame, values=["М", "Ж"], state='readonly')
         new_gender_entry.pack(pady=5)
 
-        tk.Label(frame, text="Регион", bg='lightblue').pack()
+        tk.Label(frame, text="Регион", bg='#ababf7').pack()
         regions = self.get_regions()
         self.region_names = [(region_code, f"{region_name} ({federal_district}, {team_leader}, {athlete_count} чел.)")
                          for region_code, region_name, federal_district, team_leader, athlete_count in regions]
@@ -961,7 +961,7 @@ class RusswimmingApp:
                 update_window.destroy()
 
             except Exception as e:
-                messagebox.showerror("Ошибка", str(e))
+                messagebox.showerror("Ошибка", "Базы данных не существует.")
 
         tk.Button(frame, text="Обновить", command=update_athlete_data).pack(pady=10)
 
@@ -1003,11 +1003,11 @@ class RusswimmingApp:
             results_window = tk.Toplevel(self.root)
             results_window.title("Результаты спортсмена")
 
-            results_window.configure(bg='lightblue')
-            athlete_info_frame = tk.Frame(results_window, bg='lightblue')
+            results_window.configure(bg='#ababf7')
+            athlete_info_frame = tk.Frame(results_window, bg='#ababf7')
             athlete_info_frame.pack(pady=10)
 
-            athlete_info_label = tk.Label(athlete_info_frame, bg='lightblue', 
+            athlete_info_label = tk.Label(athlete_info_frame, bg='#ababf7', 
                                           text=(
                                               f"Фамилия: {search_surname}\n"
                                               f"Имя: {search_name}\n"
@@ -1052,7 +1052,7 @@ class RusswimmingApp:
                 treeview.insert("", "end", values=row)
 
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Спортсмен или база данных не отсутствует.")
 
     def get_athletes(self):
         if not self.connect_db():
@@ -1065,7 +1065,7 @@ class RusswimmingApp:
             return athletes
 
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
 
     def get_competitions(self):
         if not self.connect_db():
@@ -1078,7 +1078,7 @@ class RusswimmingApp:
             return competitions
 
         except Exception as e:
-            messagebox.showerror("Ошибка", str(e))
+            messagebox.showerror("Ошибка", "Базы данных не существует.")
 
 if __name__ == "__main__":
     app = RusswimmingApp()
